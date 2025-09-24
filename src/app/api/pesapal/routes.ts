@@ -26,6 +26,34 @@ export async function POST(request: NextRequest){
             })
         });
         const {token} = await authResponse.json() as {token: string};
+        const orderUrl='https://pesapal.com/api/Transactions/SubmitOrderRequest';
+        const orderData = {
+            id: orderId,
+            currency,
+            amount,
+            description,
+            callbackurl:'https://yourdomain.com/api/pesapal/callback',
+            notification_id:'12345',
+            billing_address:{
+                email_address: email,
+                phone_number: phone
+            }
+        };
+        const orderResponse = await fetch (orderUrl, {
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'Accept':'application/json',
+                'Authorization': 'Bearer ${token}'
+            },
+            body:JSON.stringify(orderData)
+        });
+        const pesapalResponse = await orderResponse.json();
+        return NextResponse.json(pesapalResponse);
+    }catch (error) {
+        console.error('Pesapal API error:', error);
+        return NextResponse.json({ error:'Failed to process payement'},{ status: 500 });
+
     }
 
 }
